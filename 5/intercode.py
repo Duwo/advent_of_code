@@ -56,8 +56,6 @@ def run_intercode(intercode, input_value):
             inputParameters = intercode[instructionPointer+1:instructionPointer+3]
             values = get_values(modeParameters, inputParameters, intercode)
             outputParameter = intercode[instructionPointer+3]
-            print(values)
-            print(outputParameter)
             intercode[outputParameter] = reduce(operator.mul, values)
             instructionPointer += 4
         elif opcode == 3:
@@ -65,13 +63,48 @@ def run_intercode(intercode, input_value):
             intercode[inputParameter1] = input_value
             instructionPointer += 2
         elif opcode == 4:
-            inputParameter1 = intercode[instructionPointer+1]
-            output = intercode[inputParameter1]
-            print('new output check')
-            print(output)
+            inputParameters = [intercode[instructionPointer+1]]
+            values = get_values(modeParameters, inputParameters, intercode)
+            output = values[0]
             instructionPointer += 2
+        elif opcode == 5:
+            inputParameters = \
+                intercode[instructionPointer+1:instructionPointer+3]
+            values = get_values(modeParameters, inputParameters, intercode)
+            if values[0] != 0:
+                instructionPointer = values[1]
+            else:
+                instructionPointer += 3
+        elif opcode == 6:
+            inputParameters = \
+                intercode[instructionPointer+1:instructionPointer+3]
+            values = get_values(modeParameters, inputParameters, intercode)
+            if values[0] == 0:
+                instructionPointer = values[1]
+            else:
+                instructionPointer += 3
+        elif opcode == 7:
+            inputParameters = \
+                intercode[instructionPointer+1:instructionPointer+3]
+            values = get_values(modeParameters, inputParameters, intercode)
+            outputParameter = intercode[instructionPointer+3]
+            if values[0] < values[1]:
+                intercode[outputParameter] = 1
+            else:
+                intercode[outputParameter] = 0
+            instructionPointer += 4
+        elif opcode == 8:
+            inputParameters = \
+                intercode[instructionPointer+1:instructionPointer+3]
+            values = get_values(modeParameters, inputParameters, intercode)
+            outputParameter = intercode[instructionPointer+3]
+            if values[0] == values[1]:
+                intercode[outputParameter] = 1
+            else:
+                intercode[outputParameter] = 0
+            instructionPointer += 4
         else:
-            print("SOMTHING WENT WRONG")
+            print("SOMETHING WENT WRONG")
             return
     return output
 
@@ -86,22 +119,14 @@ def main():
 
     # intercode = [3,0,4,0,99]
     intercode = read_code()
-    # intercode = [1002,4,3,4,33]
-    input_value = 1
+    # intercode = [3,9,8,9,10,9,4,9,99,-1,8]
+    # intercode = [3,12,6,12,15,1,13,14,13,4,13,99,-1,0,1,9]
+    # intercode = [3,21,1008,21,8,20,1005,20,22,107,8,21,20,1006,20,31,\
+    #              1106,0,36,98,0,0,1002,21,125,20,4,20,1105,1,46,104, \
+    #              999,1105,1,46,1101,1000,1,20,4,20,1105,1,46,98,99]
+    input_value = 5
 
     return run_intercode(intercode, input_value)
-
-
-    # return run_intercode(intercode)
-    # for i in range(1, 100):
-    #     intercode[1] = i
-    #     for j in range(1, 100):
-    #         intercode[2] = j
-    #         if run_intercode(intercode)[0] == 19690720:
-    #             return 100*i + j
-    #         else:
-    #             intercode = copy.copy(memory)
-    #             intercode[1] = i
 
 if __name__ == "__main__":
     print(main())
