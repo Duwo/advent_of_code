@@ -22,15 +22,9 @@ def run_intercode(intercode):
         outputParameter = intercode[instructionPointer+3]
 
         if optcode == 1:
-            try :
-                intercode[outputParameter] = intercode[inputParameter1] + intercode[inputParameter2]
-            except:
-                pass
+            intercode[outputParameter] = intercode[inputParameter1] + intercode[inputParameter2]
         elif optcode == 2:
-            try:
-                intercode[outputParameter] = intercode[inputParameter1] * intercode[inputParameter2]
-            except:
-                pass
+            intercode[outputParameter] = intercode[inputParameter1] * intercode[inputParameter2]
 
     return intercode
 
