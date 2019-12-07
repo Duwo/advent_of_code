@@ -44,21 +44,18 @@ def count_orbits():
 
     return orbits
 
-def find_common_ancestor(my_orbits, santa_orbits):
-    common_ansecstor = my_orbits.pop(0)
-    while common_ansecstor not in santa_orbits:
-        common_ansecstor = my_orbits.pop(0)
+def find_common_ancestor(one, two):
+    while one.val not in two.traverse_to('COM'):
+        one = one.next
 
-    return common_ansecstor
+    return one.val
 
 def main():
     read_nodes()
     sort_nodes()
     me =find_node('YOU')
     santa = find_node('SAN')
-    my_orbits = me.traverse_to('COM')
-    santa_orbits = santa.traverse_to('COM')
-    common_ansecstor = find_common_ancestor(my_orbits, santa_orbits)
+    common_ansecstor = find_common_ancestor(me, santa)
     orbital_transfers = len(me.traverse_to(common_ansecstor)) + len(santa.traverse_to(common_ansecstor))
     print(orbital_transfers)
 
