@@ -9,14 +9,15 @@ class Node:
         self.next_val = next_val
         self.next = None # the pointer initially points to nothing
 
-    def traverse(self):
+    def traverse_to(self, val):
         node = self # start from the head node
-        orbits = 0
-        while node.next_val != 'COM':
-            node = node.next # move on to the next node
-            orbits += 1
-        orbits += 1
+        orbits = []
+        while node.next_val != val:
+            node = node.next
+            orbits.append(node.next_val)
+
         return orbits
+
 
 def read_nodes():
     file = os.path.dirname(os.path.abspath(__file__)) + '/data/input'
@@ -39,15 +40,27 @@ def find_node(val):
 def count_orbits():
     orbits = 0
     for node in NODES:
-        orbits += node.traverse()
+        orbits += len(node.traverse_to('COM'))
 
     return orbits
+
+def find_common_ancestor(my_orbits, santa_orbits):
+    common_ansecstor = my_orbits.pop(0)
+    while common_ansecstor not in santa_orbits:
+        common_ansecstor = my_orbits.pop(0)
+
+    return common_ansecstor
 
 def main():
     read_nodes()
     sort_nodes()
-    orbits = count_orbits()
-    print(orbits)
+    me =find_node('YOU')
+    santa = find_node('SAN')
+    my_orbits = me.traverse_to('COM')
+    santa_orbits = santa.traverse_to('COM')
+    common_ansecstor = find_common_ancestor(my_orbits, santa_orbits)
+    orbital_transfers = len(me.traverse_to(common_ansecstor)) + len(santa.traverse_to(common_ansecstor))
+    print(orbital_transfers)
 
 
 if __name__ == "__main__":
