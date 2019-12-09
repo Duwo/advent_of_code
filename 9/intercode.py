@@ -67,7 +67,11 @@ class Amplifier():
         self.instruction_pointer += 2
 
     def handle_four(self, mode_parameters):
-        self.output_address = self.memory[self.instruction_pointer+1]
+        mode = mode_parameters.pop()
+        if mode == 1:
+            self.output_address = self.instruction_pointer+1
+        else:
+            self.output_address = self.memory[self.instruction_pointer+1]
         self.instruction_pointer += 2
 
     def handle_five(self, mode_parameters):
@@ -150,13 +154,14 @@ class Amplifier():
                 return
 
 class IntercodeComputer():
-    def __init__(self, intercode, feedback_mode):
+    def __init__(self, intercode, amp_mode, feedback_mode):
         self.intercode = intercode
         self.amplifiers = []
+        self.amp_mode = amp_mode
         self.feedback_mode = feedback_mode
 
     def create_amplifiers(self, setting_combination=[]):
-        if self.feedback_mode:
+        if self.amp_mode:
             for phase_setting in setting_combination:
                 self.amplifiers.append(Amplifier(phase_setting, self.intercode, self))
         else:
@@ -178,16 +183,13 @@ class IntercodeComputer():
         if self.feedback_mode:
             done = False
             while not done:
-                print('----------------------')
-                print('Starting feedback with: ', current)
                 current, done = self.amplify_signal(current)
-                print('Is done: ', done)
 
         return current
 
 
 def read_code():
-    file = os.path.dirname(os.path.abspath(__file__)) + '/data/input2'
+    file = os.path.dirname(os.path.abspath(__file__)) + '/data/input'
     intercode = []
     with open(file) as fh:
         for x in fh.read().split(','):
@@ -218,26 +220,28 @@ def main():
     # intercode = [3,31,3,32,1002,32,10,32,1001,31,-2,31,1007,31,0,33,\
     #              1002,33,7,33,1,33,31,31,1,32,31,31,4,31,99,0,0,0]
 
+    input_value= None
     # intercode = [109,1,204,-1,1001,100,1,100,1008,100,16,101,1006,101,0,99]
 
-    feedback_mode = True
+    input_value = None
+    intercode = [1102,34915192,34915192,7,4,7,99,0]
+    intercode = [104,1125899906842624,99]
+
+    amp_mode = False
+    feedback_mode = False
     outputs = []
-    computer = IntercodeComputer(intercode, feedback_mode)
-    phase_list = permutations([5,6,7,8,9], 5)
+    computer = IntercodeComputer(intercode, amp_mode, feedback_mode)
+    # phase_list = permutations([5,6,7,8,9], 5)
     # phase_list = permutations([0,1,2,3,4], 5)
-    if feedback_mode:
+    if amp_mode:
         for setting_combination in phase_list:
             computer.create_amplifiers(setting_combination)
             outputs.append(computer.calculate(0))
             computer.reset_memory(setting_combination)
     else:
         computer.create_amplifiers()
+        print(computer.amplifiers)
         outputs.append(computer.calculate())
-
-
-
-
-
     print(max(outputs))
 
 
