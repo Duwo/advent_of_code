@@ -1,192 +1,6 @@
-import os, copy
-from functools import reduce
-import operator
+import os
 from itertools import permutations
-
-class Amplifier():
-    def __init__(self, phase_setting, intercode, computer):
-        self.phase_setting = phase_setting
-        self.instruction_pointer = 0
-        self.first_input =  True
-        self.output_address = None
-        self.use_phase_setting = True
-        self.computer = computer
-        self.memory = copy.copy(intercode)
-
-    def get_opcode_and_parameters(self):
-        instructions = str(self.memory[self.instruction_pointer])
-        try:
-            opcode = int(instructions[-2:])
-            parameters = list(instructions[:-2])
-        except:
-            return int(instructions), []
-
-        parameter_list = []
-        while parameters:
-            parameter_list.append(int(parameters.pop()))
-        return opcode, parameter_list
-
-    def get_values(self, parameter_modes, instructions):
-        values = []
-        print(instructions)
-        for instruction in instructions:
-            if parameter_modes:
-                parameter = parameter_modes.pop(0)
-                if parameter == 0:
-                    values.append(self.memory[instruction])
-                elif parameter == 1:
-                    values.append(instruction)
-            else:
-                values.append(self.memory[instruction])
-
-        return values
-
-    def handle_one(self, mode_parameters):
-        input_parameters = \
-            self.memory[self.instruction_pointer+1:self.instruction_pointer+3]
-        values = self.get_values(mode_parameters, input_parameters)
-        output_parameter = self.memory[self.instruction_pointer+3]
-        self.memory[output_parameter] = sum(values)
-        self.instruction_pointer += 4
-
-    def handle_two(self, mode_parameters):
-        input_parameters = \
-            self.memory[self.instruction_pointer+1:self.instruction_pointer+3]
-        values = self.get_values(mode_parameters, input_parameters)
-        output_parameter = self.memory[self.instruction_pointer+3]
-        self.memory[output_parameter] = reduce(operator.mul, values)
-        self.instruction_pointer += 4
-
-    def handle_three(self, mode_parameters, input_signal):
-        input_parameter = self.memory[self.instruction_pointer+1]
-        if self.use_phase_setting and self.first_input:
-            self.memory[input_parameter] = self.phase_setting
-            self.first_input = False
-        else:
-            self.memory[input_parameter] = input_signal
-        self.instruction_pointer += 2
-
-    def handle_four(self, mode_parameters):
-        mode = mode_parameters.pop()
-        if mode == 1:
-            self.output_address = self.instruction_pointer+1
-        else:
-            self.output_address = self.memory[self.instruction_pointer+1]
-        self.instruction_pointer += 2
-
-    def handle_five(self, mode_parameters):
-        input_parameters = \
-            self.memory[self.instruction_pointer+1:self.instruction_pointer+3]
-        values = self.get_values(mode_parameters, input_parameters)
-        if values[0] != 0:
-            self.instruction_pointer = values[1]
-        else:
-            self.instruction_pointer += 3
-
-    def handle_six(self, mode_parameters):
-        input_parameters = \
-            self.memory[self.instruction_pointer+1:self.instruction_pointer+3]
-        values = self.get_values(mode_parameters, input_parameters)
-        if values[0] == 0:
-            self.instruction_pointer = values[1]
-        else:
-            self.instruction_pointer += 3
-
-    def handle_seven(self, mode_parameters):
-        input_parameters = \
-            self.memory[self.instruction_pointer+1:self.instruction_pointer+3]
-        values = self.get_values(mode_parameters, input_parameters)
-        output_parameter = self.memory[self.instruction_pointer+3]
-        if values[0] < values[1]:
-            self.memory[output_parameter] = 1
-        else:
-            self.memory[output_parameter] = 0
-
-        self.instruction_pointer += 4
-
-    def handle_eight(self, mode_parameters):
-        input_parameters = \
-            self.memory[self.instruction_pointer+1:self.instruction_pointer+3]
-        values = self.get_values(mode_parameters, input_parameters)
-        output_parameter = self.memory[self.instruction_pointer+3]
-        if values[0] == values[1]:
-            self.memory[output_parameter] = 1
-        else:
-            self.memory[output_parameter] = 0
-
-        self.instruction_pointer += 4
-
-    def run_code(self, input_signal):
-        while self.instruction_pointer <= len(self.memory):
-            opcode, mode_parameters = self.get_opcode_and_parameters()
-            print("Opcode: {}".format(opcode))
-            print("parameters: {}".format(mode_parameters))
-
-            if opcode == 99:
-                done = True
-                output = self.memory[self.output_address]
-                return output, done
-
-            if opcode == 1:
-                self.handle_one(mode_parameters)
-            elif opcode == 2:
-                self.handle_two(mode_parameters)
-            elif opcode == 3:
-                self.handle_three(mode_parameters, input_signal)
-            elif opcode == 4:
-                self.handle_four(mode_parameters)
-                done = False
-                output = self.memory[self.output_address]
-                print('Sending signal output: ', output)
-                return output, done
-            elif opcode == 5:
-                self.handle_five(mode_parameters)
-            elif opcode == 6:
-                self.handle_six(mode_parameters)
-            elif opcode == 7:
-                self.handle_seven(mode_parameters)
-            elif opcode == 8:
-                self.handle_eight(mode_parameters)
-            elif opcode == 9:
-                self.handle_nine(mode_parameters)
-            else:
-                print("SOMETHING WENT WRONG")
-                return
-
-class IntercodeComputer():
-    def __init__(self, intercode, amp_mode, feedback_mode):
-        self.intercode = intercode
-        self.amplifiers = []
-        self.amp_mode = amp_mode
-        self.feedback_mode = feedback_mode
-
-    def create_amplifiers(self, setting_combination=[]):
-        if self.amp_mode:
-            for phase_setting in setting_combination:
-                self.amplifiers.append(Amplifier(phase_setting, self.intercode, self))
-        else:
-            self.amplifiers.append(Amplifier([], self.intercode, self))
-
-    def reset_memory(self, setting_combination=[]):
-        self.amplifiers = []
-
-    def amplify_signal(self, input_signal):
-        for amp in self.amplifiers:
-            print('Sending signal to amp: ', input_signal)
-            output, done = amp.run_code(input_signal)
-            print('Got signal from amp: ', output)
-            input_signal = copy.copy(output)
-        return output, done
-
-    def calculate(self, input_value=None):
-        current, done = self.amplify_signal(input_value)
-        if self.feedback_mode:
-            done = False
-            while not done:
-                current, done = self.amplify_signal(current)
-
-        return current
-
+from intercode_computer import IntercodeComputer
 
 def read_code():
     file = os.path.dirname(os.path.abspath(__file__)) + '/data/input'
@@ -223,9 +37,10 @@ def main():
     input_value= None
     # intercode = [109,1,204,-1,1001,100,1,100,1008,100,16,101,1006,101,0,99]
 
-    input_value = None
-    intercode = [1102,34915192,34915192,7,4,7,99,0]
-    intercode = [104,1125899906842624,99]
+    input_value = 2
+    # intercode = [1102,34915192,34915192,7,4,7,99,0]
+    # intercode = [104,1125899906842624,99]
+    # intercode = [109,1,204,-1,1001,100,1,100,1008,100,16,101,1006,101,0,99]
 
     amp_mode = False
     feedback_mode = False
@@ -240,9 +55,12 @@ def main():
             computer.reset_memory(setting_combination)
     else:
         computer.create_amplifiers()
-        print(computer.amplifiers)
-        outputs.append(computer.calculate())
-    print(max(outputs))
+        computer.calculate(input_value)
+        print(computer.output)
+
+    return
+
+    # print(max(outputs))
 
 
 if __name__ == "__main__":
