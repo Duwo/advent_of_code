@@ -28,13 +28,21 @@ def main():
     space = Space(space_rows)
     space.create_asteroids()
 
-    visable_asteroids = []
+    best_observer = Observer(None, space)
     for asteroid in space.asteroids:
         observer = Observer(asteroid, space)
         observer.caclulate_visable_asteroids()
-        visable_asteroids.append(len(observer.asteroid_sight_vectors))
+        if len(observer.asteroid_sight_vectors) > \
+                len(best_observer.asteroid_sight_vectors):
+            best_observer = observer
 
-    print(max(visable_asteroids))
+    hello_sorted = best_observer.order_sight_vectors_for_laser()
+    coords = hello_sorted[199][1].coords
+    print(coords[0]*100 + coords[1])
+    # while best_observer.destroyed_asteroids != 200:
+    #     asteroid = best_observer.shot_laser()
+
+    # print(len(best_observer.asteroid_sight_vectors))
 
 
 if __name__ == "__main__":
