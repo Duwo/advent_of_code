@@ -8,8 +8,8 @@ class IntercodeComputer():
         self.amp_mode = amp_mode
         self.feedback_mode = feedback_mode
         self.output = ''
-        self.grid = [['.']*1000 for i in range(1000)]
-        self.current_position = [500,500]
+        self.grid = [['.']*100 for i in range(20)]
+        self.current_position = [40,9]
         self.painted_positions = []
         # 0 = right, 1 = up, 2 = left, 3 = down
         self.direction = 1
@@ -27,9 +27,14 @@ class IntercodeComputer():
         self.amplifiers = []
 
     def amplify_signal(self, input_signal):
+        self.grid[self.current_position[1]][self.current_position[0]] = '#'
         for amp in self.amplifiers:
             done = False
             while not done:
+                if self.position_is_white():
+                    input_signal = 1
+                else:
+                    input_signal = 0
                 done = amp.run_code(input_signal)
                 if self.amp_mode:
                     input_signal = amp.output
@@ -38,10 +43,6 @@ class IntercodeComputer():
                     if self.should_move:
                         self.move(amp.output)
                         self.should_move = False
-                        if self.position_is_white():
-                            input_signal = 1
-                        else:
-                            input_signal = 0
                     else:
                         if not self.position_already_painted():
                             self.nr_painted += 1
@@ -89,11 +90,11 @@ class IntercodeComputer():
         if self.direction == 0:
             self.current_position[0] += 1
         elif self.direction == 1:
-            self.current_position[1] += 1
+            self.current_position[1] -= 1
         elif self.direction == 2:
             self.current_position[0] -= 1
         elif self.direction == 3:
-            self.current_position[1] -= 1
+            self.current_position[1] += 1
 
     def position_is_black(self):
         return \

@@ -24,7 +24,10 @@ def main():
     else:
         computer.create_amplifiers(0)
         computer.calculate(input_value)
-        print(computer.nr_painted)
+        file = os.path.dirname(os.path.abspath(__file__)) + '/data/output'
+        with open(file, 'w+') as fh:
+            for row in computer.grid:
+                fh.write(''.join(row) + '\n')
 
 if __name__ == "__main__":
     main()
