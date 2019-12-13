@@ -7,37 +7,33 @@ class Planet():
 
     """Planet"""
 
-    def __init__(self, planet_position, planet_system):
+    def __init__(self, position, planet_system):
         """
         :planet_position: [x,y,z]
         :planet_system: PlanetSystem
 
         """
-        self.position = planet_position
-        self.velocity = [0,0,0]
+        self.pos = position
+        self.v = 0
         self.planet_system = planet_system
-        self.length_check = 1000
-        self.x_string = ['', '', '']
-        self.velocity_strings = ['', '', '']
-        self.found_repetitions = [[False, False, False], [False, False, False]]
+        self.visited = []
+        self.v_visited = []
 
     def visit(self):
-        for axis in range(3):
-            self.position_strings[axis] += str(self.position[axis]) + ','
-            self.velocity_strings[axis] += str(self.velocity[axis]) + ','
+        self.visited.append(self.pos)
+        self.v_visited.append(self.v)
 
-    def get_frequencies(self):
-        frequencies = []
-        for axis in range(3):
-            s = self.position_strings[axis]
-            i = (s+s).find(s[:100000], 1, -2)
-            if i != -1:
-                self.found_repetitions[0][axis] = s[:i]
+    def is_repeating(self):
+        if len(self.visited) > 20:
+            return self.visited[-10:] == self.visited[:10] and \
+                self.v_visited[-10:] == self.v_visited[:10]
+        else:
+            return False
 
-            s = self.velocity_strings[axis]
-            i = (s+s).find(s[:100000], 1, -1)
-            if i != -1:
-                self.found_repetitions[1][axis] = s[:i]
+        # s = self.velocity_visiteds[axis]
+        # i = (s+s).find(s[:100000], 1, -1)
+        # if i != -1:
+        #     self.found_repetitions[1][axis] = s[:i]
 
 
     def set_velocity(self):
@@ -45,18 +41,16 @@ class Planet():
         TODO
         """
         for planet in set(self.planet_system.planets) - set([self]):
-            for axis in range(3):
-                if planet.position[axis] > self.position[axis]:
-                    self.velocity[axis] += 1
-                elif planet.position[axis] < self.position[axis]:
-                    self.velocity[axis] -= 1
+            if planet.pos > self.pos:
+                self.v += 1
+            elif planet.pos < self.pos:
+                self.v -= 1
 
     def move(self):
         """
         TODO
         """
-        for axis in range(3):
-            self.position[axis] += self.velocity[axis]
+        self.pos += self.v
 
     def potential_energy(self):
         energy = 0

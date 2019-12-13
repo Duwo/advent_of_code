@@ -19,10 +19,15 @@ class PlanetSystem():
             planet.visit()
 
         for planet in self.planets:
+            is_repeating = planet.is_repeating()
+
+        for planet in self.planets:
             planet.set_velocity()
 
         for planet in self.planets:
             planet.move()
+
+        return is_repeating
 
     def get_energy(self):
         """
@@ -37,8 +42,6 @@ class PlanetSystem():
     def calculate_repetitions(self):
         for planet in self.planets:
             position_frequencies = planet.get_frequencies()
-            print(position_frequencies)
-            break
 
     def calculate_steps(self):
         x_position_repetition = self.claculate_x_repetition()
