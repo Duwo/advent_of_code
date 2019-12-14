@@ -12,6 +12,7 @@ def read_code():
 
 def main():
     intercode = read_code()
+    intercode[0] = 2
     input_value = 0
     amp_mode = False
     feedback_mode = False
@@ -22,9 +23,12 @@ def main():
             outputs.append(computer.calculate(0))
             computer.reset_memory(setting_combination)
     else:
-        computer.create_amplifiers(0)
-        computer.calculate()
-        print(computer.nr_block_tiles)
+        computer.create_amplifiers()
+        computer.calculate(input_value)
+        file = os.path.dirname(os.path.abspath(__file__)) + '/data/output'
+        with open(file, 'w+') as fh:
+            for row in computer.grid:
+                fh.write(''.join(row) + '\n')
 
 if __name__ == "__main__":
     main()
