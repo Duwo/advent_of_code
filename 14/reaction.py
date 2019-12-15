@@ -67,18 +67,23 @@ class Reaction():
         self.save_to_storage(self.quantity)
 
     def dissemble_material(self, amount):
-        dissemble_quantity = int(amount/self.quantity)
-        if dissemble_quantity >= 1:
+        dissemble_iterations = int(amount/self.quantity)
+
+        if self.name == 'ORE':
+            self.factory.cargo_ore += amount
+        elif dissemble_iterations >= 1:
             for dependency in self.dependencies:
-                    dependency_conversion_quantity = dependency[1] * dissemble_quantity
-                    if dependency[0].name == 'ORE':
-                        self.factory.cargo_ore += dependency_conversion_quantity
-                    else:
-                        dependency[0].save_to_storage(dependency_conversion_quantity)
-                        dependency[0].dissemble_material(dependency_conversion_quantity)
+                    dependency_conversion_quantity = \
+                        dependency[1] * dissemble_iterations
+                    dependency[0].save_to_storage(
+                        dependency_conversion_quantity
+                    )
+                    dependency[0].dissemble_material(
+                        dependency_conversion_quantity
+                    )
 
             self.remove_from_storage(
-                int(amount)
+                self.quantity * dissemble_iterations
             )
 
     def remove_from_storage(self, amount):
