@@ -44,11 +44,8 @@ if __name__ == "__main__":
     ore_reaction = Reaction('ORE', 1, factory, dependencies = [])
     factory.reactions['ORE'] = (ore_reaction, 1)
     reactions = Reaction.create_from_dict(parsed_reactions, factory)
-    factory.get_material('FUEL', 1)
-    # full_fuel_prod = int(factory.cargo_ore / factory.used_ore)
-    print(factory.used_ore)
-    # print(factory.produce_from_cargo('FUEL'))
-
+    factory.produce_from_cargo('FUEL')
+    # print(factory.stored_materials)
 
 
 
