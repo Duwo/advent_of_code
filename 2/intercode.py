@@ -1,4 +1,6 @@
-import os, copy
+import os
+import copy
+
 
 def read_code():
     file = os.path.dirname(os.path.abspath(__file__)) + '/data/input'
